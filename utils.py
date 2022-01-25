@@ -47,7 +47,7 @@ def init_textfile(textfile):
 
         lastline = (descs1[-1][0]+9, "end song")
         descs1.append(lastline)
-        
+
     return descs1
 
 def create_image(img, i, text, gen, pre_scaled=True):
@@ -72,19 +72,19 @@ class Pars(torch.nn.Module):
         super(Pars, self).__init__()
         self.gen = gen
         if self.gen == 'biggan':
-            params1 = torch.zeros(32, 128).normal_(std=1).cuda()
+            params1 = torch.zeros(32, 128).normal_(std=1).cpu()
             self.normu = torch.nn.Parameter(params1)
             params_other = torch.zeros(32, 1000).normal_(-3.9, .3)
             self.cls = torch.nn.Parameter(params_other)
-            self.thrsh_lat = torch.tensor(1).cuda()
-            self.thrsh_cls = torch.tensor(1.9).cuda()
+            self.thrsh_lat = torch.tensor(1).cpu()
+            self.thrsh_cls = torch.tensor(1.9).cpu()
 
         elif self.gen == 'dall-e':
-            self.normu = torch.nn.Parameter(torch.zeros(1, 8192, 64, 64).cuda())
+            self.normu = torch.nn.Parameter(torch.zeros(1, 8192, 64, 64).cpu())
 
         elif self.gen == 'stylegan':
             latent_shape = (1, 1, 512)
-            latents_init = torch.zeros(latent_shape).squeeze(-1).cuda()
+            latents_init = torch.zeros(latent_shape).squeeze(-1).cpu()
             self.normu = torch.nn.Parameter(latents_init, requires_grad=True)
 
     def forward(self):
@@ -120,7 +120,7 @@ def ascend_txt(model, lats, sideX, sideY, perceptor, percep, gen, tokenizedtxt):
         cutn = 128
         zs = [*lats()]
         out = model(zs[0], zs[1], 1)
-        
+
     elif gen == 'dall-e':
         cutn = 32
         zs = lats()
@@ -131,10 +131,10 @@ def ascend_txt(model, lats, sideX, sideY, perceptor, percep, gen, tokenizedtxt):
         img = model(zs)
         img = torch.nn.functional.upsample_bilinear(img, (224, 224))
 
-        img_logits, _text_logits = perceptor(img, tokenizedtxt.cuda())
+        img_logits, _text_logits = perceptor(img, tokenizedtxt.cpu())
 
         return 1/img_logits * 100, img, zs
-    
+
     p_s = []
     for ch in range(cutn):
         # size = int(sideX*torch.zeros(1,).normal_(mean=.8, std=.3).clip(.5, .95))
@@ -193,7 +193,7 @@ def train(i, model, lats, sideX, sideY, perceptor, percep, optimizer, text, toke
     optimizer.zero_grad()
     loss.backward()
     optimizer.step()
-    
+
     if i+1 == epochs:
         # if it's the last step, return the final z
         return zs

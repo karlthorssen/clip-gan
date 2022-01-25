@@ -46,3 +46,10 @@ xmltodict==0.12.0
 youtube_transcript_api
 pytube
 git+git://github.com/openai/CLIP.git
+
+nbconvert==5.6.1
+jupyterlab==3.2.8
+jupyterlab-pygments==0.1.2
+jupyterlab-server==2.10.3
+opencv-python==4.5.5.62
+scikit-image==0.19.1
